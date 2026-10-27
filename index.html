@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HealthGuard AI Elder Care</title>
+<meta name="theme-color" content="#0b2e33">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e9f3f1;--ink:#0d2326;--mut:#4d6a6d;--glass:rgba(255,255,255,.62);--bd:rgba(13,35,38,.14);--ac:#0f9d8f;--hot:#e5484d;--warn:#d98a00;--fs:16px}
+:root[data-theme=dark]{--bg:#061a1d;--ink:#e6f4f2;--mut:#93b3b5;--glass:rgba(20,52,58,.55);--bd:rgba(230,244,242,.16);--ac:#3fd0bf}
+:root[data-contrast=high]{--bg:#000;--ink:#fff;--mut:#fff;--glass:#000;--bd:#fff;--ac:#ffe600;--hot:#ff6b6b}
+*{box-sizing:border-box}
+body{margin:0;font:var(--fs)/1.55 Manrope,system-ui,sans-serif;color:var(--ink);background:radial-gradient(900px 500px at 85% -10%,rgba(15,157,143,.28),transparent),radial-gradient(700px 500px at -10% 40%,rgba(229,72,77,.14),transparent),var(--bg);min-height:100vh}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.skip{position:absolute;left:-999px}.skip:focus{left:8px;top:8px;background:#fff;color:#000;padding:8px;z-index:9}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px clamp(14px,4vw,40px)}
+h1{margin:0;font-size:1.35em;font-weight:800;letter-spacing:-.02em}
+.tools button,.tabs button,.btn{font:inherit;color:var(--ink);background:var(--glass);border:1px solid var(--bd);border-radius:10px;padding:8px 13px;cursor:pointer;backdrop-filter:blur(14px)}
+.btn.p{background:var(--ac);color:#04201d;border-color:transparent;font-weight:600}.btn.sos{background:var(--hot);color:#fff;font-weight:800;border-color:transparent}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:4px clamp(14px,4vw,40px) 12px;scrollbar-width:thin}
+.tabs button{white-space:nowrap}.tabs button[aria-selected=true]{background:var(--ac);color:#04201d;font-weight:600}
+main{padding:0 clamp(14px,4vw,40px) 60px;max-width:1280px;margin:auto}
+section[hidden]{display:none}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.card{background:var(--glass);border:1px solid var(--bd);border-radius:18px;padding:18px;backdrop-filter:blur(18px);box-shadow:0 10px 30px rgba(0,0,0,.08)}
+.card h2{margin:0 0 8px;font-size:1.05em}.mut{color:var(--mut);font-size:.9em}
+.hero{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;align-items:center;margin-bottom:14px}
+@media(max-width:760px){.hero{grid-template-columns:1fr}}
+.hero h2{font-size:clamp(1.8em,5vw,3em);line-height:1.05;margin:0 0 10px;letter-spacing:-.03em}
+.ecg{width:100%;height:150px}
+.bpm{font-size:2.6em;font-weight:800;color:var(--hot)}
+.big{font-size:1.9em;font-weight:800}
+input,select,textarea{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--bd);border-radius:10px;padding:8px;max-width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+canvas.ch{width:100%;height:130px}
+ul{padding-left:0;list-style:none;margin:0}li{padding:7px 0;border-bottom:1px solid var(--bd)}
+.chat{height:280px;overflow:auto;border:1px solid var(--bd);border-radius:12px;padding:10px;margin-bottom:8px}
+.m{margin:6px 0;padding:8px 11px;border-radius:12px;max-width:88%}.m.u{background:var(--ac);color:#04201d;margin-left:auto}.m.b{background:var(--glass);border:1px solid var(--bd)}
+.tag{display:inline-block;padding:2px 9px;border-radius:99px;font-size:.8em;font-weight:600;border:1px solid currentColor}
+.hi{color:var(--hot)}.md{color:var(--warn)}.lo{color:var(--ac)}
+.breath{width:90px;height:90px;border-radius:50%;background:var(--ac);margin:10px auto;animation:b 8s ease-in-out infinite}
+@keyframes b{50%{transform:scale(1.55)}}
+@media(prefers-reduced-motion:reduce){.breath{animation:none}}
+.disc{font-size:.82em;color:var(--mut);border-left:3px solid var(--warn);padding-left:10px;margin-top:10px}
+#idle{position:fixed;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.65);z-index:20}#idle[hidden]{display:none}
+@media print{header,.tabs,.tools,.noprint{display:none}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header>
+ <h1>HealthGuard AI <span class="mut" style="font-size:.6em;font-weight:600">Elder Care</span></h1>
+ <div class="tools" role="toolbar" aria-label="Accessibility and display">
+  <button id="th" aria-label="Toggle dark mode">Dark mode</button>
+  <button id="hc" aria-pressed="false">High contrast</button>
+  <button id="fp" aria-label="Increase font size">A+</button>
+  <button id="fm" aria-label="Decrease font size">A−</button>
+  <button class="btn sos" id="sosTop">SOS</button>
+ </div>
+</header>
+<nav class="tabs" role="tablist" aria-label="Modules" id="tabs"></nav>
+<main id="main">
+
+<section id="dash">
+ <div class="hero card">
+  <div><h2>Elder care, watched by nine agents.</h2><p class="mut">Log a reading and the Monitoring, Nutrition, Fitness and Mental Wellness agents re-check your trends together.</p>
+   <div class="row"><span class="mut">Live heart rate</span><span class="bpm" id="bpm">72</span><span class="mut">bpm</span></div>
+   <div class="row"><span class="mut">Health score</span><span class="big" id="score">–</span></div></div>
+  <canvas class="ecg" id="ecg" aria-label="Animated heartbeat trace" role="img"></canvas>
+ </div>
+ <div class="grid">
+  <div class="card"><h2>Log a reading</h2>
+   <form id="vf" class="row"><label>Systolic <input id="vs" type="number" value="128" style="width:80px"></label>
+   <label>Diastolic <input id="vd" type="number" value="82" style="width:80px"></label>
+   <label>Glucose <input id="vg" type="number" value="104" style="width:80px"></label>
+   <label>SpO₂ <input id="vo" type="number" value="97" style="width:70px"></label>
+   <label>Heart rate <input id="vh" type="number" value="74" style="width:70px"></label>
+   <label>Weight kg <input id="vw" type="number" value="72" style="width:70px"></label>
+   <button class="btn p">Save reading</button></form></div>
+  <div class="card"><h2>Blood pressure (systolic, 14 days)</h2><canvas class="ch" id="c_sys"></canvas></div>
+  <div class="card"><h2>Blood sugar (mg/dL)</h2><canvas class="ch" id="c_glu"></canvas></div>
+  <div class="card"><h2>Heart rate</h2><canvas class="ch" id="c_hr"></canvas></div>
+  <div class="card"><h2>Oxygen level</h2><canvas class="ch" id="c_spo"></canvas></div>
+  <div class="card"><h2>BMI calculator</h2><div class="row"><label>Height cm <input id="bh" type="number" value="172" style="width:80px"></label><button class="btn" id="bb">Calculate</button></div><div id="bo" class="big">–</div><div class="mut" id="bw"></div></div>
+ </div>
+</section>
+
+<section id="risk" hidden>
+ <div class="card"><h2>AI Early Disease Risk Detection</h2>
+  <p class="mut">Fits a trend line to your last 14 days of readings and flags drift before it crosses clinical thresholds. Uses everything you log on the dashboard.</p>
+  <div id="riskOut"></div>
+  <h2 style="margin-top:14px">Wellness forecast (next 7 days)</h2><div id="fc"></div>
+  <p class="disc">HealthGuard AI gives preventive information, not a diagnosis. It cannot replace a doctor. For chest pain, trouble breathing or sudden weakness, call your local emergency number now.</p></div>
+</section>
+
+<section id="ai" hidden>
+ <div class="card"><h2>AI Health Assistant</h2>
+  <div class="row"><label>Language <select id="lang"><option value="en-IN">English</option><option value="hi-IN">हिन्दी</option><option value="te-IN">తెలుగు</option></select></label>
+  <label><input type="checkbox" id="speak"> Read replies aloud</label></div>
+  <div class="chat" id="chat" role="log" aria-live="polite"></div>
+  <form id="cf" class="row"><input id="ci" style="flex:1;min-width:180px" placeholder="Describe a symptom or ask a health question" aria-label="Message"><button class="btn" type="button" id="mic">Speak</button><button class="btn p">Send</button></form>
+  <details class="noprint"><summary>Connect a real AI model</summary><p class="mut">Enter the https address of your own server that calls the model (the readme has a short example). Never put an API key in this page.</p><div class="row"><input id="aiu" type="url" placeholder="https://your-server.example/api/chat" style="flex:1;min-width:200px" aria-label="AI endpoint"><button class="btn" id="ais" type="button">Save</button></div><label><input type="checkbox" id="aic"> I agree to send my message and an anonymous trend summary to this endpoint</label></details>
+  <p class="disc">Symptom guidance is educational. It is not a diagnosis.</p></div>
+</section>
+
+<section id="med" hidden>
+ <div class="card"><h2>Medicines</h2><div class="mut" id="adh"></div><ul id="ml"></ul>
+  <form id="mf" class="row noprint"><input id="mn" placeholder="Medicine and dose" aria-label="Medicine"><input id="mt" type="time" value="08:00" aria-label="Time"><button class="btn p">Add medicine</button></form></div>
+</section>
+
+<section id="rec" hidden>
+ <div class="card"><h2>Digital health records</h2>
+  <div class="row noprint"><input id="rs" placeholder="Search records" aria-label="Search records"><button class="btn" id="rp">Export as PDF</button></div>
+  <ul id="rl"></ul>
+  <form id="rf" class="row noprint"><input id="rn" placeholder="Title (e.g. HbA1c report)" aria-label="Title"><select id="rt"><option>Lab report</option><option>Prescription</option><option>Vaccination</option></select><input id="rd" type="date" aria-label="Date"><button class="btn p">Add record</button></form>
+  <p class="mut">The demo stores records in this browser only. Production encrypts them (AES-256) server-side.</p></div>
+</section>
+
+<section id="nut" hidden>
+ <div class="grid">
+  <div class="card"><h2>Water</h2><div class="big" id="wv">0 / 8 glasses</div><div class="row"><button class="btn p" id="wa">Add a glass</button></div></div>
+  <div class="card"><h2>Calories</h2><div class="big" id="cv">0 / 2000 kcal</div><form id="kf" class="row"><input id="kn" placeholder="Meal" aria-label="Meal"><input id="kc" type="number" placeholder="kcal" style="width:80px" aria-label="Calories"><button class="btn p">Add meal</button></form><ul id="kl"></ul></div>
+  <div class="card"><h2>AI meal plan</h2><label>Condition <select id="dc"><option value="gen">General wellness</option><option value="bp">High blood pressure</option><option value="dia">Blood sugar control</option><option value="wt">Weight loss</option></select></label><div id="plan"></div></div>
+ </div>
+</section>
+
+<section id="fit" hidden>
+ <div class="grid">
+  <div class="card"><h2>Steps</h2><div class="big" id="sv">0 / 8000</div><div class="row"><button class="btn p" id="s1">+500 steps</button></div><progress id="sp" max="8000" value="0" style="width:100%"></progress></div>
+  <div class="card"><h2>Sleep (hours, 14 days)</h2><canvas class="ch" id="c_slp"></canvas></div>
+  <div class="card"><h2>Badges</h2><div id="bd"></div></div>
+ </div>
+</section>
+
+<section id="sosp" hidden>
+ <div class="grid">
+  <div class="card"><h2>Emergency SOS</h2><button class="btn sos" id="sos" style="font-size:1.3em;padding:18px 28px">Send SOS alert</button><div id="sout" role="status" aria-live="assertive"></div></div>
+  <div class="card"><h2>Critical medical info</h2><p>Blood group O+ · Allergy: penicillin · Condition: pre-hypertension<br>Contacts: Mother +91 90000 00001, Doctor +91 90000 00002</p><p class="mut">Sample data. Editable in production.</p></div>
+  <div class="card"><h2>Caregiver alert workflow</h2><div class="row"><label>Escalate after <select id="cgs"><option value="20">20 seconds (demo)</option><option value="120">2 minutes</option><option value="300">5 minutes</option></select></label><button class="btn sos" id="cgt">Test the workflow</button></div><ol id="wf" role="log" aria-live="polite"></ol><div class="row"><button class="btn p" id="cga" hidden>Caregiver acknowledged</button></div><p class="mut">Each step opens your phone's messaging or dialler with the alert and location filled in. Fully automatic SMS, push and voice calls need the server described in the readme.</p></div>
+  <div class="card"><h2>Emergency history</h2><ul id="sl"><li class="mut">No alerts yet.</li></ul></div>
+ </div>
+</section>
+
+<section id="apt" hidden>
+ <div class="card"><h2>Appointments</h2><ul id="al"></ul>
+  <form id="af" class="row noprint"><input id="an" placeholder="Doctor and reason" aria-label="Doctor"><input id="ad" type="datetime-local" aria-label="Date and time"><button class="btn p">Book</button></form>
+  <p class="mut">Telemedicine rooms open from each upcoming appointment in production (WebRTC).</p></div>
+</section>
+
+<section id="mnt" hidden>
+ <div class="grid">
+  <div class="card"><h2>Mood check-in</h2><div class="row" id="moods"></div><canvas class="ch" id="c_mood"></canvas></div>
+  <div class="card"><h2>Stress check</h2><div id="sq"></div><div id="sr" class="big"></div></div>
+  <div class="card"><h2>Guided breathing</h2><div class="breath" aria-hidden="true"></div><p class="mut">Breathe in as the circle grows, out as it shrinks. Four minutes.</p></div>
+ </div>
+</section>
+
+<section id="agt" hidden>
+ <div class="card"><h2>Multi-agent consultation</h2><p class="mut">All nine agents read the shared health state and report. The orchestrator ranks the findings, links related ones and builds one action plan.</p><button class="btn p" id="co">Run consultation</button><div id="cor"></div></div>
+ <div class="card" style="margin-top:14px"><h2>Agent activity</h2><p class="mut">Agents publish findings to a shared event bus. Others subscribe and act.</p><ul id="ag"></ul></div>
+</section>
+
+<section id="fall" hidden>
+ <div class="grid">
+  <div class="card"><h2>Fall detection</h2><p class="mut">Uses your phone's motion sensor. A short free-fall, a hard impact and then stillness starts a 15-second countdown. If you do not tap "I'm OK", an SOS goes out.</p>
+   <div class="row"><button class="btn p" id="fe">Start monitoring</button><button class="btn" id="fs">Simulate a fall</button></div>
+   <div id="fo" class="big" role="status" aria-live="assertive">Not monitoring</div></div>
+  <div class="card"><h2>Live motion (m/s²)</h2><canvas class="ch" id="c_mot" aria-label="Motion trace" role="img"></canvas></div>
+ </div>
+</section>
+
+<section id="rpt" hidden>
+ <div class="card"><h2>Medical report analysis</h2>
+  <p class="mut">Paste lab results, one per line, like "LDL 165 mg/dL". The Medical Records agent compares each value with standard adult ranges.</p>
+  <textarea id="rt2" rows="6" style="width:100%" aria-label="Lab results">Hemoglobin 10.8 g/dL
+Fasting glucose 132 mg/dL
+HbA1c 6.9 %
+LDL cholesterol 165 mg/dL
+Vitamin D 22 ng/mL</textarea>
+  <div class="row"><button class="btn p" id="ra">Analyse report</button></div><ul id="ro"></ul>
+  <p class="disc">Reference ranges vary by lab, age and sex. This is an explanation aid, not a diagnosis. Review every result with your doctor.</p></div>
+</section>
+
+<section id="sec" hidden>
+ <div class="grid">
+  <div class="card"><h2>Encrypted vault</h2><p class="mut">Locks your records with AES-256-GCM. The key comes from your passphrase (PBKDF2, 210,000 rounds) and never leaves this browser. Only the ciphertext is saved on this device.</p>
+   <div class="row"><input id="pp" type="password" autocomplete="off" placeholder="Passphrase, 8+ characters" aria-label="Passphrase"><button class="btn p" id="vl">Encrypt and lock</button><button class="btn" id="vu">Unlock</button><button class="btn" id="vx">Erase saved vault</button></div><div id="vo" class="mut" role="status"></div></div>
+  <div class="card"><h2>Role-based access</h2><label>Role <select id="role"><option>patient</option><option>doctor</option><option>admin</option></select></label><p id="rb" class="mut"></p></div>
+  <div class="card"><h2>Tamper-evident audit log</h2><div class="row"><button class="btn" id="av">Verify chain</button><button class="btn" id="at">Simulate tampering</button></div><div id="avo" role="status"></div><ul id="alg"></ul></div>
+  <div class="card"><h2>Protections active</h2><ul><li>Content-Security-Policy blocks scripts and requests from other sites</li><li>All user text is escaped before it is shown</li><li>Session locks after 5 minutes idle</li><li>SHA-256 hash-chained audit entries</li><li>Role checks on exports, records and audit views</li><li>Unlock attempts are rate-limited</li></ul></div>
+ </div>
+</section>
+
+<section id="tst" hidden>
+ <div class="card"><h2>Automated tests</h2><div class="row"><button class="btn p" id="tr">Run all tests</button><span id="ts" class="big" role="status"></span></div><p class="mut" id="covn">Measured with Node's built-in coverage on the pure-logic module (28 tests): 100% of lines, 97.2% of branches, 97.2% of functions. The page's UI wiring is not covered. Run hg-coverage.js (see the readme) to reproduce.</p><ul id="tl"></ul></div>
+</section>
+
+<section id="eld" hidden>
+ <div class="grid">
+  <div class="card"><h2>Caregivers</h2><ul id="cgl"></ul><form id="cgf" class="row noprint"><input id="cgn" placeholder="Name" aria-label="Caregiver name"><input id="cgp" type="tel" placeholder="Phone, like +919000000000" aria-label="Phone"><button class="btn p">Add caregiver</button></form><p class="mut">The first caregiver is contacted first. Sample contacts are shown until you change them.</p></div>
+  <div class="card"><h2>Daily check-in</h2><p class="mut">Tap once a day. A missed check-in is flagged to caregivers.</p><div class="row"><button class="btn p" id="ci2">I'm OK today</button></div><div id="cis" class="mut" role="status"></div></div>
+  <div class="card"><h2>Fall-risk screen</h2><p class="mut">The three key questions from the CDC STEADI programme.</p><div id="fq"></div><div id="fr" class="big" role="status"></div><p class="disc">A screening aid only. Talk to a doctor about any "yes".</p></div>
+  <div class="card"><h2>Elder mode</h2><p class="mut">Larger text and a high-contrast theme.</p><button class="btn p" id="em" aria-pressed="false">Turn on elder mode</button></div>
+ </div>
+</section>
+
+<section id="wear" hidden>
+ <div class="grid">
+  <div class="card"><h2>Connect a device</h2><p class="mut">Uses Web Bluetooth with the standard Heart Rate and Blood Pressure profiles, so smartwatches, chest straps and cuffs that advertise them can pair. It works in Chrome and Edge over https, not in Safari or on iPhone. Glucose meters need a record-access protocol that is not supported yet.</p>
+   <div class="row"><button class="btn p" id="wh">Pair heart-rate device</button><button class="btn p" id="wb">Pair blood-pressure monitor</button><button class="btn" id="wsim">Simulate readings</button></div><div id="wo" role="status" aria-live="polite"></div></div>
+  <div class="card"><h2>Live feed</h2><div class="bpm" id="wl">–</div><ul id="wlog"></ul></div>
+ </div>
+</section>
+
+<section id="clin" hidden>
+ <div class="card"><h2>Clinical review</h2>
+  <p class="disc" style="margin-top:0">No clinical validation has been done yet. This form collects structured feedback from real clinicians so a pilot can report it.</p>
+  <form id="clf"><div class="row"><input id="cln" placeholder="Reviewer name" aria-label="Reviewer name"><input id="clr" placeholder="Role, like General physician" aria-label="Reviewer role"></div><div id="clq"></div>
+  <textarea id="clc" rows="3" style="width:100%" placeholder="Comments" aria-label="Comments"></textarea><div class="row"><button class="btn p">Save feedback</button><button class="btn" type="button" id="clx">Export as JSON</button></div></form><ul id="cll"></ul>
+  <h2>Validation plan</h2><ul><li>Compare trend flags with clinician-labelled cases and report sensitivity and specificity</li><li>Compare wearable readings with a clinical-grade cuff</li><li>Replay recorded activity data through the fall detector and count false alerts per day</li><li>Pilot in an elder-care home and record caregiver response times</li></ul></div>
+</section>
+</main>
+<div id="idle" hidden role="alertdialog" aria-modal="true" aria-labelledby="it"><div class="card"><h2 id="it">Session locked</h2><p>You were away for 5 minutes. Resume to continue.</p><button class="btn p" id="ir">Resume session</button></div></div>
+
+<script>
+const $=s=>document.querySelector(s),R=document.documentElement;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+var locked=false,mot=[0,0];
+const tabs=[['dash','Dashboard'],['risk','Risk detection'],['ai','Assistant'],['med','Medicines'],['rec','Records'],['nut','Nutrition'],['fit','Fitness'],['sosp','Emergency'],['apt','Appointments'],['mnt','Mind'],['eld','Elder care'],['wear','Wearables'],['fall','Fall detection'],['rpt','Report analysis'],['agt','Agents'],['sec','Security'],['clin','Clinical review'],['tst','Tests']];
+const tb=$('#tabs');
+tabs.forEach(([id,l],i)=>{const b=document.createElement('button');b.role='tab';b.textContent=l;b.dataset.id=id;b.setAttribute('aria-selected',i==0);b.onclick=()=>show(id);tb.append(b)});
+function show(id){tabs.forEach(([t])=>$('#'+t).hidden=t!=id);tb.querySelectorAll('button').forEach(b=>b.setAttribute('aria-selected',b.dataset.id==id));if(id=='risk')riskRun();if(id=='fit'||id=='mnt'||id=='dash'||id=='fall')drawAll()}
+// settings
+$('#th').onclick=()=>R.dataset.theme=R.dataset.theme=='dark'?'':'dark';
+$('#hc').onclick=e=>{const on=R.dataset.contrast!='high';R.dataset.contrast=on?'high':'';e.target.setAttribute('aria-pressed',on);drawAll()};
+let fs=16;$('#fp').onclick=()=>R.style.setProperty('--fs',(fs=Math.min(24,fs+2))+'px');$('#fm').onclick=()=>R.style.setProperty('--fs',(fs=Math.max(12,fs-2))+'px');
+// agents bus
+const agents=[];function say(a,m){agents.unshift(`<b>${a} Agent</b> · ${m}`);$('#ag').innerHTML=agents.slice(0,30).map(x=>`<li>${x}</li>`).join('')}
+// data
+const rnd=(b,s,t)=>Array.from({length:14},(_,i)=>+(b+t*i+(Math.sin(i*2.3)*s)).toFixed(1));
+const D={sys:rnd(118,3,1.1),dia:rnd(76,2,.5),glu:rnd(96,4,1.3),hr:rnd(68,2,.3),spo:rnd(98,.4,-.05),wt:rnd(72,.3,.05),slp:rnd(7.4,.4,-.12),mood:[4,4,3,4,3,3,4,3,2,3,3,2,3,2]};
+const css=n=>getComputedStyle(R).getPropertyValue(n).trim();
+function line(id,a,col){const c=$('#'+id);if(!c||c.offsetParent===null)return;const w=c.width=c.clientWidth*2,h=c.height=c.clientHeight*2,x=c.getContext('2d');x.clearRect(0,0,w,h);const mn=Math.min(...a)-1,mx=Math.max(...a)+1;x.lineWidth=5;x.strokeStyle=css(col||'--ac');x.beginPath();a.forEach((v,i)=>{const px=10+i*(w-20)/(a.length-1),py=h-10-(v-mn)/(mx-mn)*(h-20);i?x.lineTo(px,py):x.moveTo(px,py)});x.stroke();x.fillStyle=css('--ink');x.font='22px sans-serif';x.fillText(a[a.length-1],w-70,24)}
+function drawAll(){line('c_sys',D.sys);line('c_glu',D.glu,'--warn');line('c_hr',D.hr,'--hot');line('c_spo',D.spo);line('c_slp',D.slp);line('c_mood',D.mood);line('c_mot',mot);score()}
+const slope=a=>{const n=a.length,mx=(n-1)/2,my=a.reduce((p,c)=>p+c)/n;let nu=0,de=0;a.forEach((v,i)=>{nu+=(i-mx)*(v-my);de+=(i-mx)**2});return nu/de};
+const last=a=>a[a.length-1];
+function score(){let s=100;if(last(D.sys)>130)s-=15;if(last(D.glu)>110)s-=12;if(last(D.spo)<95)s-=15;if(last(D.slp)<6.5)s-=8;if(last(D.mood)<3)s-=8;s-=Math.max(0,slope(D.sys))*4+Math.max(0,slope(D.glu))*2;$('#score').textContent=Math.max(30,Math.round(s))+'/100'}
+$('#vf').onsubmit=e=>{e.preventDefault();[['sys','vs'],['dia','vd'],['glu','vg'],['spo','vo'],['hr','vh'],['wt','vw']].forEach(([k,i])=>{D[k].push(+$('#'+i).value);D[k].shift()});drawAll();say('Health Monitoring','New reading saved. Trend re-analysed.');riskRun(true)};
+$('#bb').onclick=()=>{const b=bmi(last(D.wt),$('#bh').value);$('#bo').textContent=b.toFixed(1);$('#bw').textContent=b<18.5?'Underweight range':b<25?'Healthy range':b<30?'Overweight range':'Obesity range'};
+// risk
+function riskRun(q){const rules=[['Blood pressure',slope(D.sys),.7,last(D.sys),'Systolic is climbing. Cut added salt, walk 30 minutes daily and re-check twice a week. Book a BP review if it stays above 130.','Nutrition'],['Blood sugar',slope(D.glu),.9,last(D.glu),'Fasting glucose is drifting up. Reduce sugary drinks, add fibre and ask your doctor about an HbA1c test.','Nutrition'],['Resting heart rate',slope(D.hr),.5,last(D.hr),'Resting heart rate is rising. Look at sleep, caffeine and stress.','Fitness'],['Sleep',-slope(D.slp),.08,last(D.slp),'Sleep is shrinking. Keep a fixed bedtime and cut screens an hour before bed.','Mental Wellness'],['Mood',-slope(D.mood),.07,last(D.mood),'Mood is trending down. A short daily check-in and breathing practice can help. Talk to someone you trust.','Mental Wellness'],['Oxygen',-slope(D.spo),.06,last(D.spo),'SpO₂ is slipping. If you feel breathless, seek care promptly.','Symptom Analysis']];
+let h='',n=0;rules.forEach(([nm,s,t,v,msg,ag])=>{const lvl=s>t*2?'hi':s>t?'md':'lo',lb={hi:'Needs attention',md:'Watch',lo:'Stable'}[lvl];if(lvl!='lo'){n++;if(!q)say(ag,`${nm} trend flagged (${lb}). ${msg.split('.')[0]}.`)}h+=`<div class="row"><b style="min-width:150px">${nm}</b><span class="tag ${lvl}">${lb}</span><span class="mut">slope ${s.toFixed(2)}/day, latest ${v}</span></div>${lvl!='lo'?`<div class="mut" style="margin:0 0 8px 0">${msg}</div>`:''}`});
+$('#riskOut').innerHTML=h;const f=[['BP in 7 days',last(D.sys)+slope(D.sys)*7],['Glucose in 7 days',last(D.glu)+slope(D.glu)*7],['Sleep in 7 days',last(D.slp)+slope(D.slp)*7]];$('#fc').innerHTML=f.map(([a,v])=>`<div class="row"><b style="min-width:150px">${a}</b>${v.toFixed(1)}</div>`).join('');if(q&&n)say('Appointment',`${n} trend(s) flagged. Suggest a check-up this month.`)}
+// chat
+const T={'en-IN':{hi:'Hello! Tell me a symptom or ask a health question.',em:'Your symptoms may be serious. Use the Emergency tab or call your local emergency number now.',def:'I can help with symptoms, medicines, diet, sleep and stress. Tell me more, like how long it has lasted.'},'hi-IN':{hi:'नमस्ते! अपना लक्षण बताइए।',em:'यह गंभीर हो सकता है। तुरंत आपातकालीन नंबर पर कॉल करें।',def:'कृपया लक्षण और अवधि बताइए।'},'te-IN':{hi:'నమస్కారం! మీ లక్షణం చెప్పండి.',em:'ఇది తీవ్రమైనది కావచ్చు. వెంటనే అత్యవసర నంబర్‌కు కాల్ చేయండి.',def:'దయచేసి లక్షణం మరియు ఎంతకాలమైందో చెప్పండి.'}};
+const KB=[[/fever|temperature/,'Fever: rest, drink fluids, and see a doctor if it passes 39°C, lasts over 3 days or comes with a stiff neck or rash.'],[/headache/,'Headache: hydrate, rest in a dark room and check your blood pressure. Seek care for a sudden severe headache or vision changes.'],[/cough|cold|sore throat/,'Cough or cold: fluids, rest and steam. See a doctor if it lasts over 10 days or you wheeze.'],[/stomach|vomit|diarrh/,'Stomach upset: sip oral rehydration solution and eat light food. Seek care if there is blood or you cannot keep fluids down.'],[/sleep|insomnia/,'For sleep: fixed bedtime, no caffeine after noon, no screens an hour before bed.'],[/stress|anxi|sad|lonely/,'I am sorry you feel this way. Try the breathing exercise in the Mind tab, and reach out to someone you trust.'],[/diet|food|eat/,'Open the Nutrition tab for a plan matched to your condition.']];
+function add(t,c){const d=document.createElement('div');d.className='m '+c;d.textContent=t;$('#chat').append(d);$('#chat').scrollTop=1e9;if(c=='b'&&$('#speak').checked){const u=new SpeechSynthesisUtterance(t);u.lang=$('#lang').value;speechSynthesis.speak(u)}}
+function reply(q){const L=T[$('#lang').value];q=q.toLowerCase();if(RF.test(q)){say('Emergency Response','Red-flag symptom in chat. Escalation advised.');return L.em}say('Symptom Analysis','Triaged: "'+esc(q.slice(0,30))+'"');const k=KB.find(([r])=>r.test(q));return k&&$('#lang').value=='en-IN'?k[1]:k?k[1]:L.def}
+$('#cf').onsubmit=e=>{e.preventDefault();const v=$('#ci').value.trim();if(!v)return;add(v,'u');$('#ci').value='';answer(v)};
+add(T['en-IN'].hi,'b');$('#lang').onchange=()=>add(T[$('#lang').value].hi,'b');
+$('#mic').onclick=()=>{const S=window.SpeechRecognition||window.webkitSpeechRecognition;if(!S)return add('Voice input is not supported in this browser.','b');const r=new S();r.lang=$('#lang').value;r.onresult=e=>{$('#ci').value=e.results[0][0].transcript;$('#cf').requestSubmit()};r.start()};
+// medicines
+let meds=[{n:'Amlodipine 5 mg',t:'08:00',d:false},{n:'Metformin 500 mg',t:'13:00',d:false},{n:'Vitamin D 1000 IU',t:'21:00',d:false}];
+function medR(){const now=new Date().toTimeString().slice(0,5);$('#ml').innerHTML=meds.map((m,i)=>{const miss=!m.d&&m.t<now;return`<li class="row"><b>${esc(m.n)}</b><span class="mut">${m.t}</span>${m.d?'<span class="tag lo">Taken</span>':miss?'<span class="tag hi">Missed</span>':'<span class="tag md">Due</span>'}${m.d?'':`<button class="btn" data-i="${i}">Mark taken</button>`}</li>`}).join('');const p=meds.filter(m=>m.d).length;$('#adh').textContent=`Today's adherence: ${p}/${meds.length}. Refill reminder: Metformin runs out in 5 days.`;if(meds.some((m,i)=>!m.d&&m.t<now))say('Medication','Missed dose detected. Reminder sent.')}
+$('#ml').onclick=e=>{if(e.target.dataset.i){meds[e.target.dataset.i].d=true;medR();say('Medication','Dose logged.')}};
+$('#mf').onsubmit=e=>{e.preventDefault();if($('#mn').value){meds.push({n:$('#mn').value,t:$('#mt').value,d:false});$('#mn').value='';medR()}};
+// records
+let recs=[{n:'Lipid profile',t:'Lab report',d:'2026-08-14'},{n:'Amoxicillin prescription',t:'Prescription',d:'2026-06-02'},{n:'COVID booster',t:'Vaccination',d:'2025-11-20'}];
+function recR(){const q=$('#rs').value.toLowerCase();$('#rl').innerHTML=locked?'<li class="mut">Records are encrypted. Unlock them on the Security tab.</li>':!can(role(),'view_records')?'<li class="mut">Your role cannot view patient records.</li>':recs.filter(r=>(r.n+r.t).toLowerCase().includes(q)).map(r=>`<li><b>${esc(r.n)}</b> <span class="tag lo">${esc(r.t)}</span> <span class="mut">${esc(r.d)}</span></li>`).join('')||'<li class="mut">No records match.</li>'}
+$('#rs').oninput=recR;$('#rp').onclick=()=>{if(!can(role(),'export'))return say('Security','Export blocked for role '+role());audit('Records exported');print()};
+$('#rf').onsubmit=e=>{e.preventDefault();if($('#rn').value){recs.unshift({n:$('#rn').value,t:$('#rt').value,d:$('#rd').value||'today'});$('#rn').value='';recR();say('Medical Records','Record added and indexed.');audit('Record added')}};
+// nutrition
+let wg=0,kc=0;$('#wa').onclick=()=>{wg++;$('#wv').textContent=wg+' / 8 glasses'};
+$('#kf').onsubmit=e=>{e.preventDefault();const c=+$('#kc').value;if(!c)return;kc+=c;$('#cv').textContent=kc+' / 2000 kcal';$('#kl').insertAdjacentHTML('afterbegin',`<li>${esc($('#kn').value||'Meal')} · ${c} kcal</li>`);$('#kn').value=$('#kc').value=''};
+const PL={gen:'Breakfast: oats, fruit, nuts. Lunch: dal, vegetables, one roti. Dinner: grilled fish or paneer with salad.',bp:'Low-salt plan. Breakfast: banana and oats. Lunch: vegetable dal, curd. Dinner: steamed vegetables with grilled chicken. Avoid pickles and processed snacks.',dia:'Low-glycaemic plan. Breakfast: moong chilla. Lunch: millet, sabzi, dal. Dinner: soup and paneer. Avoid sweet drinks.',wt:'Calorie-aware plan. Breakfast: egg whites and fruit. Lunch: salad, dal, small rice portion. Dinner: soup and sprouts.'};
+$('#dc').onchange=plan;function plan(){$('#plan').innerHTML=`<p>${PL[$('#dc').value]}</p><p class="disc">General guidance. A dietitian can tailor it to you.</p>`;say('Nutrition','Meal plan updated.')}$('#plan').innerHTML=`<p>${PL.gen}</p>`;
+// fitness
+let st=0;$('#s1').onclick=()=>{st+=500;$('#sv').textContent=st+' / 8000';$('#sp').value=st;badges()};
+function badges(){const b=[['First 500 steps',st>=500],['2,000 steps',st>=2000],['Goal reached',st>=8000],['Hydrated',wg>=8]];$('#bd').innerHTML=b.map(([n,k])=>`<span class="tag ${k?'lo':'md'}" style="margin:3px">${k?'Earned':'Locked'}: ${n}</span>`).join('');if(st==8000)say('Fitness','Daily step goal reached.')}badges();
+// SOS
+function sos(){audit('SOS triggered');startWorkflow('SOS alert');show('sosp');$('#sout').textContent='Starting the caregiver alert workflow...';const fin=l=>{const t=new Date().toLocaleTimeString();$('#sout').textContent='Alert workflow started. '+l;$('#sl').innerHTML=(($('#sl').textContent.includes('No alerts')?'':$('#sl').innerHTML))+`<li>${t} · SOS sent · ${l}</li>`;say('Emergency Response','SOS triggered. Caregiver alert workflow started.')};navigator.geolocation?navigator.geolocation.getCurrentPosition(p=>fin(`Location ${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`),()=>fin('Location unavailable'),{timeout:5000}):fin('Location unavailable')}
+$('#sos').onclick=sos;$('#sosTop').onclick=()=>show('sosp');
+// appointments
+let ap=[{n:'Dr. Rao · BP follow-up',d:'2026-11-03T10:30'}];function apR(){$('#al').innerHTML=ap.map(a=>`<li><b>${esc(a.n)}</b> <span class="mut">${esc(a.d.replace('T',' '))}</span> <span class="tag md">Reminder set</span></li>`).join('')}
+$('#af').onsubmit=e=>{e.preventDefault();if($('#an').value&&$('#ad').value){ap.push({n:$('#an').value,d:$('#ad').value});$('#an').value='';apR();say('Appointment','Booked and reminder scheduled.')}};
+// mind
+['Awful','Low','Okay','Good','Great'].forEach((m,i)=>{const b=document.createElement('button');b.className='btn';b.textContent=m;b.onclick=()=>{D.mood.push(i+1);D.mood.shift();line('c_mood',D.mood);say('Mental Wellness','Mood logged: '+m)};$('#moods').append(b)});
+const Q=['I felt overwhelmed this week','I had trouble relaxing','I slept badly because of worry'];let sc=[0,0,0];
+$('#sq').innerHTML=Q.map((q,i)=>`<div class="row"><span style="flex:1">${q}</span><select data-q="${i}" aria-label="${q}"><option value="0">Never</option><option value="1">Sometimes</option><option value="2">Often</option></select></div>`).join('');
+$('#sq').onchange=e=>{sc[e.target.dataset.q]=+e.target.value;const t=sc.reduce((a,b)=>a+b);$('#sr').textContent=t<2?'Low stress':t<4?'Moderate stress':'High stress. Consider talking to a professional.'};
+// ECG hero
+(function(){const c=$('#ecg'),x=c.getContext('2d');let t=0;function f(){const w=c.width=c.clientWidth*2,h=c.height=300;x.lineWidth=4;x.strokeStyle=css('--hot');x.beginPath();for(let i=0;i<w;i+=4){const p=((i+t)%360)/360;let y=0;if(p>.1&&p<.15)y=-18;if(p>.3&&p<.33)y=-30;if(p>.33&&p<.36)y=130;if(p>.36&&p<.4)y=-50;if(p>.6&&p<.7)y=-26*Math.sin((p-.6)*31.4);const py=h/2+y;i?x.lineTo(i,py):x.moveTo(i,py)}x.stroke();t+=5;if(!matchMedia('(prefers-reduced-motion:reduce)').matches)requestAnimationFrame(f)}f();setInterval(()=>{if(!window.liveHR)$('#bpm').textContent=70+Math.round(Math.random()*5)},2000)})();
+/*PURE-START*/
+const RF=/chest pain|can.?t breathe|breathless|unconscious|stroke|bleeding heavily/;
+const bmi=(w,h)=>w/((h/100)**2);
+function riskScores(d){const sg=x=>Math.round(100/(1+Math.exp(-x))),L=a=>a[a.length-1];return{htn:sg((L(d.sys)-128)/6+slope(d.sys)-1),dia:sg((L(d.glu)-105)/8+slope(d.glu)*.5-1),burn:sg((7-L(d.slp))*1.1+(3-L(d.mood))*.8+Math.max(0,-slope(d.slp))*4-1)}}
+function detectFall(s){for(let i=0;i<s.length;i++){if(s[i].a>=3)continue;for(let j=i+1;j<s.length&&s[j].t-s[i].t<=1000;j++){if(s[j].a<=25)continue;const w=s.filter(x=>x.t>s[j].t&&x.t<=s[j].t+1500);if(s[s.length-1].t>=s[j].t+1500&&w.length>=3&&w.every(x=>Math.abs(x.a-9.8)<4))return true}}return false}
+const walkS=()=>Array.from({length:40},(_,i)=>({t:i*100,a:10+Math.sin(i/2)*3}));
+const fallS=()=>[...Array.from({length:20},(_,i)=>({t:i*100,a:10+Math.sin(i)*2})),{t:2000,a:1.5},{t:2100,a:2},{t:2300,a:32},...Array.from({length:20},(_,i)=>({t:2400+i*100,a:9.8+Math.sin(i)*.5}))];
+const RANGES=[['LDL cholesterol',/\bldl\b/,0,100,'mg/dL'],['HDL cholesterol',/\bhdl\b/,40,200,'mg/dL'],['Total cholesterol',/cholesterol/,0,200,'mg/dL'],['Triglycerides',/triglyceride|\btg\b/,0,150,'mg/dL'],['HbA1c',/hba1c|\ba1c\b/,4,5.6,'%'],['Fasting glucose',/glucose|\bfbs\b|fasting sugar/,70,99,'mg/dL'],['Hemoglobin',/h(a)?emoglobin|\bhb\b/,12,17.5,'g/dL'],['Creatinine',/creatinine/,.6,1.3,'mg/dL'],['TSH',/\btsh\b/,.4,4.5,'mIU/L'],['Vitamin D',/vitamin d/,30,100,'ng/mL']];
+function parseReport(t){const out=[];t.toLowerCase().split('\n').forEach(l=>{for(const [n,re,lo,hi,u] of RANGES){const m=re.exec(l);if(!m)continue;const v=l.slice(m.index+m[0].length).match(/\d+(\.\d+)?/);if(!v)break;const val=+v[0];out.push({n,val,lo,hi,u,status:val<lo?'low':val>hi?'high':'normal'});break}});return out}
+const PERM={patient:['view_records','add_record','export','sos'],doctor:['view_records','add_record','export'],admin:['view_audit','manage_users']};
+const can=(r,a)=>(PERM[r]||[]).includes(a);
+const enc=new TextEncoder(),hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+const sha=async s=>hex(await crypto.subtle.digest('SHA-256',enc.encode(s)));
+const b64=b=>btoa(String.fromCharCode(...new Uint8Array(b))),ub=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function dkey(pw,salt){const k=await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:210000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+async function encryptJSON(o,pw){const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)),k=await dkey(pw,salt);return b64(salt)+'.'+b64(iv)+'.'+b64(await crypto.subtle.encrypt({name:'AES-GCM',iv},k,enc.encode(JSON.stringify(o))))}
+async function decryptJSON(s,pw){const [a,b,c]=s.split('.').map(ub),k=await dkey(pw,a);return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:b},k,c)))}
+async function verifyChain(l){let p='0';for(const e of l){if(e.p!==p||e.h!==await sha(p+e.t+e.a))return false;p=e.h}return true}
+function parseHeartRate(dv){return dv.getUint8(0)&1?dv.getUint16(1,true):dv.getUint8(1)}
+function sfloat(dv,o){const r=dv.getUint16(o,true);let m=r&0x0FFF,e=r>>12;if(m>=0x0800)m-=0x1000;if(e>=0x8)e-=0x10;return m*Math.pow(10,e)}
+function parseBP(dv){const f=dv.getUint8(0),c=f&1?7.50062:1;let o=7;const out={sys:Math.round(sfloat(dv,1)*c),dia:Math.round(sfloat(dv,3)*c)};if(f&2)o+=7;if(f&4&&dv.byteLength>=o+2)out.pulse=Math.round(sfloat(dv,o));return out}
+const escLevel=(n,el,step,acked)=>acked?-1:Math.min(Math.floor(el/step),n);
+const fallRisk=a=>a.some(Boolean);
+/*PURE-END*/
+/*TESTS-START*/
+const rising={sys:[120,125,130,135,140,145],glu:[100,105,110,115,120,125],slp:[7,6.5,6,5.5,5,4.5],mood:[4,3,3,2,2,1]},steady={sys:[118,118,118,118,118,118],glu:[92,92,92,92,92,92],slp:[7.5,7.5,7.5,7.5,7.5,7.5],mood:[4,4,4,4,4,4]};
+const tests=[
+['Trend slope detects a rising series',()=>Math.abs(slope([1,2,3,4])-1)<1e-9],
+['Trend slope of flat data is zero',()=>slope([5,5,5,5])===0],
+['BMI of 72 kg at 172 cm is 24.3',()=>bmi(72,172).toFixed(1)==='24.3'],
+['Risk indicators are higher for rising trends',()=>{const a=riskScores(rising),b=riskScores(steady);return a.htn>b.htn&&a.dia>b.dia&&a.burn>b.burn}],
+['Report parser flags high LDL',()=>{const r=parseReport('LDL 165 mg/dL')[0];return r.n==='LDL cholesterol'&&r.status==='high'}],
+['Report parser flags low hemoglobin',()=>parseReport('Hemoglobin 10.8 g/dL')[0].status==='low'],
+['Report parser accepts normal values',()=>parseReport('Hemoglobin 14 g/dL')[0].status==='normal'],
+['Report parser ignores unknown lines',()=>parseReport('hello 5').length===0],
+['Fall detector fires on free-fall, impact, then stillness',()=>detectFall(fallS())===true],
+['Fall detector ignores normal walking',()=>detectFall(walkS())===false],
+['Red-flag filter catches chest pain',()=>RF.test('i have chest pain')&&!RF.test('mild headache')],
+['HTML escaping neutralises script injection',()=>!esc('<img src=x onerror=alert(1)>').includes('<')],
+['Patients cannot view audit logs, admins can',()=>!can('patient','view_audit')&&can('admin','view_audit')],
+['AES-GCM round trip restores data',async()=>(await decryptJSON(await encryptJSON({a:1},'passphrase1'),'passphrase1')).a===1],
+['AES-GCM rejects a wrong passphrase',async()=>{try{await decryptJSON(await encryptJSON({a:1},'passphrase1'),'wrong-pass');return false}catch(e){return true}}],
+['Audit chain detects tampering',async()=>{const l=[];let p='0';for(const a of['x','y']){const h=await sha(p+'t'+a);l.push({t:'t',a,p,h});p=h}const ok=await verifyChain(l);l[0].a='z';return ok&&!(await verifyChain(l))}],
+['Heart-rate parser reads 8-bit and 16-bit values',()=>parseHeartRate(new DataView(new Uint8Array([0,72]).buffer))===72&&parseHeartRate(new DataView(new Uint8Array([1,0x48,0]).buffer))===72],
+['Blood-pressure parser reads mmHg values',()=>{const r=parseBP(new DataView(new Uint8Array([0,0x78,0,0x50,0,0x5D,0]).buffer));return r.sys===120&&r.dia===80}],
+['Blood-pressure parser converts kPa to mmHg',()=>{const r=parseBP(new DataView(new Uint8Array([1,0x10,0,0x6B,0xF0,0,0]).buffer));return r.sys===120&&r.dia===80}],
+['Blood-pressure parser reads pulse after a timestamp',()=>parseBP(new DataView(new Uint8Array([6,0x78,0,0x50,0,0x5D,0,0,0,0,0,0,0,0,0x48,0]).buffer)).pulse===72],
+['SFLOAT handles negative exponents',()=>sfloat(new DataView(new Uint8Array([0x6E,0xF1]).buffer),0).toFixed(1)==='36.6'],
+['Caregiver escalation moves through the chain',()=>escLevel(2,0,20,false)===0&&escLevel(2,25,20,false)===1&&escLevel(2,45,20,false)===2&&escLevel(2,999,20,false)===2],
+['Acknowledgement stops escalation',()=>escLevel(2,100,20,true)===-1],
+['Fall-risk screen is positive with any yes',()=>fallRisk([0,1,0])&&!fallRisk([0,0,0])],
+['Permissions deny unknown roles',()=>!can('stranger','export')],
+['Report parser reads HbA1c and cholesterol lines',()=>{const r=parseReport('HbA1c 6.9 %\nTotal cholesterol 210');return r.length===2&&r.every(x=>x.status==='high')}],
+['Encrypted output hides the plaintext',async()=>!(await encryptJSON({secret:'diabetes'},'passphrase1')).includes('diabetes')],
+['Fall detector ignores a drop with no impact',()=>detectFall([{t:0,a:10},{t:100,a:2},{t:300,a:12},{t:2000,a:9.8}])===false]
+];
+/*TESTS-END*/
+async function runTests(){const ul=$('#tl');ul.innerHTML='';let ok=0;for(const [n,f] of tests){let r=false;try{r=await f()}catch(e){}ok+=r?1:0;ul.insertAdjacentHTML('beforeend',`<li><span class="tag ${r?'lo':'hi'}">${r?'Pass':'Fail'}</span> ${esc(n)}</li>`)}$('#ts').textContent=`${ok}/${tests.length} passed`}
+$('#tr').onclick=runTests;
+// predictive condition risk
+const _rr=riskRun;riskRun=function(q){_rr(q);const r=riskScores(D);$('#riskOut').insertAdjacentHTML('beforeend',`<h2 style="margin-top:14px">Condition risk indicators</h2>`+[['Hypertension',r.htn],['Type 2 diabetes',r.dia],['Burnout and poor sleep',r.burn]].map(([n,v])=>`<div class="row"><b style="min-width:190px">${n}</b><progress max="100" value="${v}" style="flex:1"></progress><span>${v}</span></div>`).join('')+`<div class="mut">Relative indicators from your own trends, not probabilities.</div>`)};
+// audit and roles
+const AL=[],role=()=>$('#role').value;
+async function audit(a){try{const p=AL.length?AL[AL.length-1].h:'0',t=new Date().toISOString();AL.push({t,a,p,h:await sha(p+t+a)});auR()}catch(e){}}
+function auR(){$('#alg').innerHTML=can(role(),'view_audit')?AL.slice(-8).reverse().map(e=>`<li class="mut">${esc(e.t.slice(11,19))} · ${esc(e.a)} · ${e.h.slice(0,8)}</li>`).join(''):'<li class="mut">Audit entries are visible to admins only.</li>'}
+$('#av').onclick=async()=>{$('#avo').textContent=!can(role(),'view_audit')?'Admin role required.':(await verifyChain(AL))?'Chain intact: no entries were altered.':'Tampering detected: the chain does not verify.'};
+$('#at').onclick=()=>{if(!can(role(),'view_audit'))return $('#avo').textContent='Admin role required.';if(AL.length>1){AL[1].a='edited by attacker';auR();$('#avo').textContent='Entry 2 was altered. Press Verify chain.'}};
+const RB={patient:'Can view, add and export own records and send SOS alerts.',doctor:'Can view, add and export records. Cannot see audit logs.',admin:'Can view audit logs and manage users. Cannot read patient records.'};
+function roleR(){$('#rb').textContent=RB[role()];auR();recR()}
+$('#role').onchange=()=>{audit('Role changed to '+role());roleR()};
+// vault
+let fails=0,until=0,vault=null;
+$('#vl').onclick=async()=>{const pw=$('#pp').value;if(pw.length<8)return $('#vo').textContent='Use a passphrase of at least 8 characters.';if(locked)return $('#vo').textContent='Already locked.';try{vault=await encryptJSON(recs,pw);recs=[];locked=true;ls.set('hg_vault',vault);$('#pp').value='';$('#vo').textContent='Locked. Ciphertext: '+vault.slice(0,48)+'…';audit('Vault encrypted and locked');recR()}catch(e){$('#vo').textContent='Encryption needs a secure (https) page.'}};
+$('#vu').onclick=async()=>{if(!locked)return $('#vo').textContent='Vault is already unlocked.';if(Date.now()<until)return $('#vo').textContent='Too many attempts. Try again in 30 seconds.';try{recs=await decryptJSON(vault,$('#pp').value);locked=false;vault=null;fails=0;$('#pp').value='';$('#vo').textContent='Unlocked.';audit('Vault unlocked');recR()}catch(e){if(++fails>=3){until=Date.now()+30000;fails=0}$('#vo').textContent='Wrong passphrase.';audit('Failed unlock attempt')}};
+// idle lock
+let idleT;function idleReset(){clearTimeout(idleT);idleT=setTimeout(()=>{$('#idle').hidden=false;$('#ir').focus();audit('Session locked (idle)')},300000)}
+['pointerdown','keydown'].forEach(ev=>addEventListener(ev,idleReset));$('#ir').onclick=()=>{$('#idle').hidden=true;audit('Session resumed');idleReset()};idleReset();
+// fall detection
+let mon=false,buf=[],cool=0,cd=null,k=0;
+function fallAlert(){if(cd)return;let n=15;const o=$('#fo');audit('Fall detected');say('Emergency Response','Possible fall detected. Waiting for confirmation.');o.innerHTML=`Fall detected. SOS in <span id="fn">${n}</span> s <button class="btn p" id="fok">I'm OK</button>`;cd=setInterval(()=>{n--;const e=$('#fn');if(e)e.textContent=n;if(n<=0){clearInterval(cd);cd=null;o.textContent='SOS sent';sos()}},1000);$('#fok').onclick=()=>{clearInterval(cd);cd=null;o.textContent=mon?'Monitoring':'Not monitoring';audit('Fall alert cancelled by user');say('Emergency Response','User confirmed they are OK.')}}
+function onMot(e){const g=e.accelerationIncludingGravity;if(!g)return;const a=Math.hypot(g.x||0,g.y||0,g.z||0),t=Date.now();buf.push({t,a});buf=buf.filter(x=>t-x.t<4000);if(++k%6==0){mot=buf.filter((_,i)=>i%6==0).map(x=>+x.a.toFixed(1)).slice(-30);if(mot.length<2)mot=[0,0];line('c_mot',mot)}if(t>cool&&detectFall(buf)){cool=t+20000;fallAlert()}}
+$('#fe').onclick=async()=>{if(mon){mon=false;removeEventListener('devicemotion',onMot);$('#fe').textContent='Start monitoring';$('#fo').textContent='Not monitoring';return}
+ if(!window.DeviceMotionEvent)return $('#fo').textContent='No motion sensor found. Use Simulate a fall.';
+ try{if(DeviceMotionEvent.requestPermission&&await DeviceMotionEvent.requestPermission()!=='granted')throw 0}catch(e){return $('#fo').textContent='Motion permission denied. Use Simulate a fall.'}
+ mon=true;addEventListener('devicemotion',onMot);$('#fe').textContent='Stop monitoring';$('#fo').textContent='Monitoring';audit('Fall monitoring started')};
+$('#fs').onclick=()=>{mot=fallS().map(x=>+x.a.toFixed(0));line('c_mot',mot);if(detectFall(fallS()))fallAlert()};
+// report analysis
+$('#ra').onclick=()=>{const r=parseReport($('#rt2').value);window.lastReport=r;const adv={'Fasting glucose':'Cut sugary foods and ask your doctor about an HbA1c test.','HbA1c':'Above the normal range. Discuss it with your doctor.','LDL cholesterol':'Reduce fried and fatty foods and discuss it with your doctor.','Hemoglobin':'A low value has several possible causes, such as low iron. See a doctor.','Vitamin D':'Get safe sun exposure and ask a doctor about supplements.'};
+ $('#ro').innerHTML=r.length?r.map(x=>`<li class="row"><b style="min-width:170px">${esc(x.n)}</b>${x.val} ${x.u} <span class="mut">normal ${x.lo}–${x.hi}</span><span class="tag ${x.status=='normal'?'lo':'hi'}">${x.status}</span>${x.status!='normal'&&adv[x.n]?`<div class="mut" style="flex-basis:100%">${adv[x.n]}</div>`:''}</li>`).join(''):'<li class="mut">No known tests found. Write one result per line, like “LDL 165 mg/dL”.</li>';
+ const bad=r.filter(x=>x.status!='normal');audit('Report analysed');say('Medical Records',`Report analysed: ${r.length} values, ${bad.length} outside range.`);if(bad.length)say('Nutrition','Diet adjustments proposed from lab results.')};
+// multi-agent consultation
+function consultData(){const rs=riskScores(D),now=new Date().toTimeString().slice(0,5),missed=meds.filter(m=>!m.d&&m.t<now).length,bad=(window.lastReport||[]).filter(r=>r.status!='normal'),hot=rs.htn>60||rs.dia>60;
+ return[['Health Monitoring',hot?`BP and glucose are trending up (indicators ${rs.htn} and ${rs.dia})`:'Vitals are stable',hot?2:0],
+ ['Symptom Analysis','No red-flag symptoms reported in chat',0],
+ ['Medication',missed?`${missed} dose(s) missed today`:'Doses are on track',missed?2:0],
+ ['Nutrition',rs.dia>60||bad.length?'Recommend a low-glycaemic, low-salt plan':'Current plan is suitable',rs.dia>60||bad.length?1:0],
+ ['Fitness',st<4000?`Steps are ${st} of 8000. Add a 20-minute walk`:'On track for the step goal',st<4000?1:0],
+ ['Appointment',ap.length?'Next visit: '+esc(ap[0].n):'No visit booked',ap.length?0:hot?2:1],
+ ['Emergency Response',`${CG.length} caregiver(s) on the alert chain; fall monitoring is ${mon?'on':'off'}`,CG.length?mon?0:1:2],
+ ['Medical Records',bad.length?`${bad.length} lab value(s) outside range: ${bad.map(r=>r.n).join(', ')}`:'No abnormal lab values analysed',bad.length?2:0],
+ ['Mental Wellness',rs.burn>60?'Sleep and mood are trending down':'Mood and sleep are steady',rs.burn>60?2:0]]}
+$('#co').onclick=()=>{const A=consultData(),top=Math.max(...A.map(a=>a[2])),lb=['Normal','Watch','Needs attention'],cls=['lo','md','hi'];
+ const links=[];if(A[0][2]==2)links.push('Health Monitoring → Nutrition, Appointment');if(A[7][2]==2)links.push('Medical Records → Nutrition, Appointment');if(A[8][2]==2)links.push('Mental Wellness → Fitness, Appointment');
+ const plan=[...A].sort((a,b)=>b[2]-a[2]).filter(a=>a[2]>0).slice(0,3);
+ $('#cor').innerHTML=`<ul>${A.map(a=>`<li><b>${a[0]}</b> <span class="tag ${cls[a[2]]}">${lb[a[2]]}</span><div class="mut">${a[1]}</div></li>`).join('')}</ul><h2 style="margin-top:12px">Orchestrator consensus: ${lb[top]}</h2>${links.length?`<div class="mut">Cross-agent hand-offs: ${links.join('; ')}</div>`:''}<ol>${plan.map(a=>`<li>${a[1]}</li>`).join('')||'<li>No action needed today.</li>'}</ol>`;
+ say('Orchestrator',`Consensus: ${lb[top]}. ${plan.length} action(s) planned.`);audit('Multi-agent consultation run')};
+// local storage helper
+const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
+// real AI model hook
+$('#aiu').value=ls.get('hg_ai')||'';
+$('#ais').onclick=()=>{try{const u=new URL($('#aiu').value);if(u.protocol!=='https:')throw 0;ls.set('hg_ai',u.href);add('AI endpoint saved. Tick the consent box to use it.','b')}catch(e){add('Enter a valid https:// address.','b')}};
+const aiOn=()=>ls.get('hg_ai')&&$('#aic').checked;
+async function answer(v){if(RF.test(v.toLowerCase())||!aiOn())return add(reply(v),'b');
+ try{const c=new AbortController();setTimeout(()=>c.abort(),15000);const r=await fetch(ls.get('hg_ai'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:v,lang:$('#lang').value,trends:{sysSlope:+slope(D.sys).toFixed(2),gluSlope:+slope(D.glu).toFixed(2),sleepAvg:+(D.slp.reduce((a,b)=>a+b)/D.slp.length).toFixed(1)}}),signal:c.signal});if(!r.ok)throw 0;const j=await r.json();add('AI model: '+String(j.reply).slice(0,1500),'b');say('Symptom Analysis','Answered by the AI model endpoint.')}catch(e){add(reply(v)+' (The AI endpoint did not respond, so built-in guidance was used.)','b')}}
+// persistent encrypted vault
+const sv=ls.get('hg_vault');if(sv){vault=sv;locked=true;recs=[]}
+$('#vx').onclick=()=>{if(!confirm('Erase the saved vault and its records from this device?'))return;ls.del('hg_vault');vault=null;locked=false;recs=[];$('#vo').textContent='Saved vault erased.';audit('Saved vault erased');recR()};
+// wearables
+let lastHrPush=0;
+function onHR(dv){const v=parseHeartRate(dv);$('#bpm').textContent=v;$('#wl').textContent=v+' bpm';const t=Date.now();if(t-lastHrPush>10000){lastHrPush=t;D.hr.push(v);D.hr.shift();$('#wlog').insertAdjacentHTML('afterbegin',`<li>${new Date().toLocaleTimeString()} · heart rate ${v} bpm</li>`);drawAll()}}
+function onBP(dv){const r=parseBP(dv);D.sys.push(r.sys);D.sys.shift();D.dia.push(r.dia);D.dia.shift();if(r.pulse){D.hr.push(r.pulse);D.hr.shift()}$('#wlog').insertAdjacentHTML('afterbegin',`<li>${new Date().toLocaleTimeString()} · blood pressure ${r.sys}/${r.dia} mmHg</li>`);drawAll();say('Health Monitoring',`Cuff reading ${r.sys}/${r.dia} saved.`);audit('Blood-pressure reading received from device');riskRun(true)}
+async function pair(svc,chr,onv){if(!navigator.bluetooth)return $('#wo').textContent='Web Bluetooth is not available here. Use Chrome or Edge over https, or Simulate readings.';try{const d=await navigator.bluetooth.requestDevice({filters:[{services:[svc]}]}),g=await d.gatt.connect(),sv2=await g.getPrimaryService(svc),c=await sv2.getCharacteristic(chr);c.addEventListener('characteristicvaluechanged',e=>onv(e.target.value));await c.startNotifications();$('#wo').textContent='Connected to '+(d.name||'device');audit('Wearable paired');say('Health Monitoring','Wearable connected: '+esc(d.name||'device'))}catch(e){$('#wo').textContent='Pairing was cancelled or failed.'}}
+$('#wh').onclick=()=>pair('heart_rate','heart_rate_measurement',dv=>{window.liveHR=true;onHR(dv)});
+$('#wb').onclick=()=>pair('blood_pressure','blood_pressure_measurement',onBP);
+$('#wsim').onclick=()=>{let n=0;window.liveHR=true;const iv=setInterval(()=>{onHR(new DataView(new Uint8Array([0,66+Math.round(Math.random()*12)]).buffer));if(++n>=6)clearInterval(iv)},1000);onBP(new DataView(new Uint8Array([0,0x7E,0,0x52,0,0x5F,0]).buffer));$('#wo').textContent='Simulated readings (no hardware connected).'};
+// caregivers and alert workflow
+let CG=JSON.parse(ls.get('hg_cg')||'null')||[{n:'Mother',p:'+919000000001'},{n:'Dr. Rao clinic',p:'+919000000002'}],wfT=null,wfAck=false;
+function cgR(){$('#cgl').innerHTML=CG.map((c,i)=>`<li class="row"><b>${i+1}. ${esc(c.n)}</b><span class="mut">${esc(c.p)}</span><button class="btn" data-d="${i}" aria-label="Remove ${esc(c.n)}">Remove</button></li>`).join('')||'<li class="mut">No caregivers yet. Alerts go straight to emergency services.</li>';ls.set('hg_cg',JSON.stringify(CG))}
+$('#cgl').onclick=e=>{if(e.target.dataset.d){CG.splice(+e.target.dataset.d,1);cgR()}};
+$('#cgf').onsubmit=e=>{e.preventDefault();const p=$('#cgp').value.replace(/[^\d+]/g,'');if($('#cgn').value&&p.length>=7){CG.push({n:$('#cgn').value.slice(0,40),p});$('#cgn').value=$('#cgp').value='';cgR();audit('Caregiver added')}};
+function stepLog(h){$('#wf').insertAdjacentHTML('beforeend',`<li>${new Date().toLocaleTimeString()} · ${h}</li>`)}
+function getLoc(cb){let done=false;const f=u=>{if(!done){done=true;cb(u)}};setTimeout(()=>f(''),4000);navigator.geolocation?navigator.geolocation.getCurrentPosition(p=>f(`https://maps.google.com/?q=${p.coords.latitude.toFixed(5)},${p.coords.longitude.toFixed(5)}`),()=>f('')):f('')}
+function startWorkflow(src){if(wfT)return;wfT=1;$('#wf').innerHTML='';audit('Caregiver workflow started: '+src);stepLog('Alert started: '+esc(src)+'. Getting location…');
+ getLoc(loc=>{const t0=Date.now();let lvl=-2;wfAck=false;$('#cga').hidden=false;const msg=`HealthGuard alert: ${src}. ${loc?'Location: '+loc:'Location unavailable.'} Please check on me now.`;
+  const tick=()=>{const L=escLevel(CG.length,(Date.now()-t0)/1000,+$('#cgs').value,wfAck);
+   if(L===-1){clearInterval(wfT);wfT=null;$('#cga').hidden=true;stepLog('Resolved: a caregiver acknowledged.');audit('Caregiver acknowledged');return}
+   if(L>lvl){lvl=L;if(L<CG.length){const c=CG[L];stepLog(`Notify ${esc(c.n)}: <a href="sms:${c.p}?body=${encodeURIComponent(msg)}">Send SMS</a> · <a href="tel:${c.p}">Call</a>`);say('Emergency Response','Notified '+esc(c.n)+'.')}else{stepLog('No acknowledgement. <a href="tel:112">Call emergency services (112)</a>');say('Emergency Response','Escalated to emergency services.');clearInterval(wfT);wfT=null;$('#cga').hidden=true}audit('Escalation level '+L)}};
+  tick();wfT=setInterval(tick,1000)})}
+$('#cgt').onclick=()=>startWorkflow('Test alert');
+$('#cga').onclick=()=>{wfAck=true};
+// daily check-in, fall-risk screen, elder mode
+function ciR(){const t=+ls.get('hg_ci');$('#cis').textContent=!t?'No check-in yet.':Date.now()-t>864e5?'Last check-in was over 24 hours ago. Caregivers would be alerted.':'Checked in at '+new Date(t).toLocaleTimeString()+'.'}
+$('#ci2').onclick=()=>{ls.set('hg_ci',Date.now());ciR();audit('Daily check-in');say('Emergency Response','Daily check-in received.')};
+const FQ=['I feel unsteady when standing or walking','I worry about falling','I have fallen in the past year'],fa=[0,0,0];
+$('#fq').innerHTML=FQ.map((q,i)=>`<div class="row"><span style="flex:1">${q}</span><select data-f="${i}" aria-label="${q}"><option value="0">No</option><option value="1">Yes</option></select></div>`).join('');
+$('#fq').onchange=e=>{fa[e.target.dataset.f]=+e.target.value;$('#fr').textContent=fallRisk(fa)?'Screen positive. Ask a doctor about fall prevention.':'Screen negative.'};
+let eld=false;$('#em').onclick=()=>{eld=!eld;R.style.setProperty('--fs',(fs=eld?22:16)+'px');R.dataset.contrast=eld?'high':'';$('#em').textContent=eld?'Turn off elder mode':'Turn on elder mode';$('#em').setAttribute('aria-pressed',eld);drawAll()};
+// clinical feedback
+const CQ=['Risk indicators look clinically sensible','Lab guidance is accurate and safe','Fall and SOS workflow is practical','Overall usefulness for elder care'];
+$('#clq').innerHTML=CQ.map((q,i)=>`<div class="row"><span style="flex:1">${q} (1 to 5)</span><select aria-label="${q}"><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select></div>`).join('');
+let FB=JSON.parse(ls.get('hg_fb')||'[]');
+function fbR(){$('#cll').innerHTML=FB.map(f=>`<li><b>${esc(f.n)}</b> <span class="mut">${esc(f.r)}</span> · scores ${esc(f.s.join(', '))}<div class="mut">${esc(f.c)}</div></li>`).join('')||'<li class="mut">No clinician feedback yet.</li>'}
+$('#clf').onsubmit=e=>{e.preventDefault();if(!$('#cln').value)return;FB.push({n:$('#cln').value.slice(0,60),r:$('#clr').value.slice(0,60),s:[...document.querySelectorAll('#clq select')].map(x=>+x.value),c:$('#clc').value.slice(0,500),t:new Date().toISOString()});ls.set('hg_fb',JSON.stringify(FB));fbR();audit('Clinical feedback saved')};
+$('#clx').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(FB,null,2)],{type:'application/json'}));a.download='clinical-feedback.json';a.click()};
+cgR();ciR();fbR();
+roleR();audit('Session started');audit('Demo data loaded');runTests();
+medR();recR();apR();drawAll();addEventListener('resize',drawAll);say('Health Monitoring','Online. Watching your 14-day trends.');
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
